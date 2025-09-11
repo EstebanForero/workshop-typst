@@ -1,16 +1,14 @@
-// Plantilla para Informe Ejecutivo de Vulnerabilidades VM
+// Plantilla para Informe Ejecutivo de Vulnerabilidades VM (Auto-generado)
 #set document(
   title: "Informe Técnico: Análisis de Vulnerabilidades",
-  author: "Tu Nombre/Empresa",
+  author: "Santiago Sabogal Millan, Esteban Fernando Forero Montejo, Laura Maria Franco Ulloa",
   date: auto,
 )
 
+// ... (El resto de tu configuración de Typst, funciones, etc. va aquí sin cambios) ...
 // ================================================================
-// Bloque de Código para Etiquetas de Vulnerabilidad (Método Simple)
+// Bloque de Código para Etiquetas de Vulnerabilidad
 // ================================================================
-
-/// Diccionario que define los niveles de severidad de vulnerabilidades.
-/// Se especifica tanto el color de fondo como el de texto manualmente.
 #let VulnerabilityLevel = (
   critical: (label: "Crítica", background: rgb("#91243E"), text_color: white),
   high: (label: "Alta", background: rgb("#DD4B50"), text_color: white),
@@ -25,73 +23,16 @@
   )
 }
 
-// --- FUNCIÓN DE TABLA SIMPLIFICADA Y ROBUSTA ---
-#let vuln_table(rows) = {
-  table(
-    columns: (auto, 1fr, auto, auto),
-    stroke: 0.5pt + gray,
-    align: (left, left, center, center),
-    fill: (col, row) => if row == 0 { luma(230) } else { white },
-    table.header([*ID*], [*Descripción*], [*Severidad*], [*Estado*]),
-    ..rows.map(row => (
-      row.at(0),
-      row.at(1),
-      align(center, vulnerability_label(VulnerabilityLevel.at(row.at(2)))),
-      row.at(3)
-    )).flatten()
-  )
-}
-
-// Configuración de página
-#set page(
-  paper: "a4",
-  margin: (x: 2.5cm, y: 2cm),
-  numbering: "1",
-  header: context [
-    #if counter(page).get().first() > 1 [
-      #line(length: 100%, stroke: 0.5pt + gray)
-      #v(0.3em)
-      #text(size: 9pt, fill: gray)[Informe Técnico - Análisis de Vulnerabilidades VM]
-    ]
-  ],
-  footer: context [
-    #line(length: 100%, stroke: 0.5pt + gray)
-    #v(0.2em)
-    #grid(
-      columns: (1fr, auto, 1fr),
-      align: (left, center, right),
-      text(size: 9pt, fill: gray)[Confidencial],
-      text(size: 9pt)[Página #counter(page).display()],
-      text(size: 9pt, fill: gray)[#datetime.today().display()]
-    )
-  ]
-)
-
-// Configuración de texto
+// ================================================================
+// Configuraciones Generales del Documento
+// ================================================================
+#set page(paper: "a4", margin: (x: 2.5cm, y: 2.5cm), numbering: "1 / 1")
 #set text(font: "Arial", size: 11pt)
-#set par(justify: true, leading: 0.6em)
+#set par(justify: true, leading: 0.65em)
 
-// Estilos de títulos
-#show heading.where(level: 1): it => [
-  #pagebreak(weak: true)
-  #v(1.5em)
-  #text(size: 18pt, weight: "bold", fill: rgb("#1f4788"))[#it.body]
-  #v(0.8em)
-  #line(length: 100%, stroke: 2pt + rgb("#1f4788"))
-  #v(1em)
-]
-
-#show heading.where(level: 2): it => [
-  #v(1.2em)
-  #text(size: 14pt, weight: "bold", fill: rgb("#2c5aa0"))[#it.body]
-  #v(0.6em)
-]
-
-#show heading.where(level: 3): it => [
-  #v(1em)
-  #text(size: 12pt, weight: "bold")[#it.body]
-  #v(0.4em)
-]
+#show heading.where(level: 1): it => pagebreak(weak: true) + v(1.5em) + text(size: 20pt, weight: 700, fill: rgb("#1f4788"))[#it.body] + v(0.8em) + line(length: 100%, stroke: 2pt + rgb("#1f4788")) + v(1em)
+#show heading.where(level: 2): it => v(1.2em) + text(size: 16pt, weight: "bold", fill: rgb("#2c5aa0"))[#it.body] + v(0.6em)
+#show heading.where(level: 3): it => v(1em) + text(size: 12pt, weight: "bold")[#it.body] + v(0.4em)
 
 #let alert_box(title: "", content: "", color: rgb("#ff6b6b")) = [
   #rect(width: 100%, stroke: 1pt + color, radius: 4pt, fill: color.lighten(95%), inset: 10pt)[
@@ -100,59 +41,31 @@
   ]
 ]
 
-// Función para crear cajas de información
-#let info_box(content: "") = [
-  #rect(
-    width: 100%,
-    stroke: 1pt + rgb("#4a90e2"),
-    radius: 3pt,
-    fill: rgb("#4a90e2").lighten(95%),
-    inset: 8pt
-  )[
-    #content
-  ]
-]
-
-// Función para tabla de vulnerabilidades
-#let vuln_table(data) = [
-  #table(
+#let vuln_table(..rows) = {
+  let cells = rows.pos().fold((), (acc, row) => acc + (
+    row.at(0), row.at(1),
+    align(center, vulnerability_label(VulnerabilityLevel.at(row.at(2)))),
+    row.at(3)
+  ))
+  table(
     columns: (auto, 1fr, auto, auto),
     stroke: 0.5pt + gray,
-    fill: (x, y) => if y == 0 { rgb("#1f4788").lighten(90%) } else if calc.odd(y) { rgb("#f8f9fa") },
-    table.header(
-      [*ID*], [*Descripción*], [*Severidad*], [*Estado*]
-    ),
-    ..data
+    align: (left, left, center, center),
+    fill: (col, row) => if row == 0 { luma(230) } else { white },
+    table.header([*ID*], [*Descripción*], [*Severidad*], [*Estado*]),
+    ..cells
   )
-]
-
+}
 // ==================== PORTADA ====================
 #align(center)[
   #v(3cm)
-  
-  #text(size: 24pt, weight: "bold", fill: rgb("#1f4788"))[
-    INFORME TÉCNICO
-  ]
-  
+  #text(size: 24pt, weight: "bold", fill: rgb("#1f4788"))[INFORME TÉCNICO]
   #v(0.5em)
-  #text(size: 16pt)[
-    Análisis de Vulnerabilidades en Máquinas Virtuales
-  ]
-  
+  #text(size: 16pt)[Análisis de Vulnerabilidades en Máquinas Virtuales]
   #v(2cm)
-  
-  #rect(
-    width: 80%,
-    stroke: 1pt + rgb("#1f4788"),
-    radius: 5pt,
-    fill: rgb("#1f4788").lighten(95%),
-    inset: 15pt
-  )[
+  #rect(width: 80%, stroke: 1pt + rgb("#1f4788"), radius: 5pt, fill: rgb("#1f4788").lighten(95%), inset: 15pt)[
     #grid(
-      columns: (auto, 1fr),
-      row-gutter: 0.8em,
-      align: (left, left),
-      
+      columns: (auto, 1fr), row-gutter: 0.8em, align: (left, left),
       [*Cliente:*], [Propietario de las máquinas],
       [*Fecha:*], [#datetime.today().display("[day]/[month]/[year]")],
       [*Preparado por:*], [Santiago Sabogal Millan, Esteban Fernando Forero Montejo, Laura Maria Franco Ulloa],
@@ -160,85 +73,30 @@
       [*Versión:*], [1.0]
     )
   ]
-  
   #v(1fr)
-  
-  #text(size: 9pt, fill: gray)[
-    Este documento contiene información confidencial y está destinado únicamente para uso interno de la organización.
-  ]
 ]
+#pagebreak()
 
-// ==================== RESUMEN EJECUTIVO ====================
+// ==================== RESUMEN TÉCNICO ====================
 = Resumen Técnico
 
-
 == Hallazgos Principales
-
-Durante el período de evaluación comprendido en la fecha de hoy, de las máquinas virtuales Metasplitable y Bee Box, se identificaron *136 vulnerabilidades* distribuidas de la siguiente manera:
-
-- *Críticas:* 16 vulnerabilidades que requieren atención inmediata
-- *Altas:* 19 vulnerabilidades que deben ser atendidas en un plazo máximo de 30 días
-- *Medias:* 75 vulnerabilidades programadas para resolución en los próximos 90 días
-- *Bajas:* 26 vulnerabilidades de seguimiento continuo
+Se identificaron 136 vulnerabilidades en total, con 15 críticas, 8 altas, 91 medias y 22 bajas. El hallazgo más crítico es la detección repetida de SSL Versión 2 y 3 en BEE\\\#-BOX, lo que indica una exposición significativa en sistemas clave.
 
 #alert_box(
   title: "Riesgo Principal Identificado",
-  content: [
-    [DESCRIPCIÓN DEL RIESGO MÁS CRÍTICO ENCONTRADO]
-    
-    *Impacto Estimado:* [DESCRIPCIÓN DEL IMPACTO]
-    
-    *Recomendación Inmediata:* [ACCIÓN PRIORITARIA]
-  ],
+  content: [El riesgo principal es la posible interrupción operacional y filtración de datos debido a las vulnerabilidades críticas de SSL, que podrían permitir ataques de intermediario y comprometer la confidencialidad, resultando en daños reputacionales y incumplimiento normativo como GDPR.],
   color: rgb("#ff4757")
 )
 
 == Recomendaciones Estratégicas
+1. Implementar una política de gestión de vulnerabilidades proactiva que priorice la remediación de fallos críticos.
+2. Fortalecer los controles de seguridad en la capa de transporte mediante la actualización a protocolos TLS modernos.
+3. Realizar auditorías de seguridad regulares y capacitar al personal en concienciación sobre ciberseguridad.
+4. Establecer un marco de respuesta a incidentes para mitigar rápidamente cualquier brecha detectada.
 
-1. *Implementación inmediata* de parches críticos en sistemas identificados
-2. *Fortalecimiento* de la configuración de seguridad en máquinas virtuales
-3. *Establecimiento* de un programa de monitoreo continuo
-4. *Capacitación* del personal técnico en mejores prácticas de seguridad
-
-
-// ==================== METODOLOGÍA ====================
-= Metodología de Evaluación
-
-== Alcance del Análisis
-
-La evaluación se realizó sobre la siguiente infraestructura:
-
-- *Número de máquinas virtuales analizadas:* 2
-- *Sistemas operativos evaluados:* Linux (Ubuntu)
-- *Hipervisores incluidos:* VMware
-
-== Herramientas Utilizadas
-
-#table(
-  columns: (1fr, 2fr, 1fr),
-  stroke: 0.5pt + gray,
-  fill: (x, y) => if calc.odd(y) { rgb("#f8f9fa") },
-  
-  [*Herramienta*], [*Propósito*], [*Versión*],
-  [Nessus Essentials], [Escaneo de vulnerabilidades], [10.9.3],
-  [Nmap], [Descubrimiento de servicios], [7.97],
-  [Metasploit], [Validación de vulnerabilidades], [X.X.X],
-)
-
-== Criterios de Clasificación
-
-Las vulnerabilidades se clasificaron utilizando el estándar CVSS v3.0:
-
-- *Crítica (9.0-10.0):* Explotación inmediata posible, impacto severo
-- *Alta (7.0-8.9):* Explotación probable, impacto significativo
-- *Media (4.0-6.9):* Explotación posible con condiciones específicas
-- *Baja (0.1-3.9):* Impacto limitado o explotación compleja
-
-// ==================== HALLAZGOS DETALLADOS ====================
-= Hallazgos Detallados de Nmap
-
-
-= Hallazgos Detallados de Nessus Essentials
+// ==================== RESUMEN DE HALLAZGOS POR HOST ====================
+= Resumen de Hallazgos por Host
 
 == Vulnerabilidades Críticas
 
@@ -1009,7 +867,7 @@ El servidor SNMP remoto responde a la cadena de comunidad predeterminada 'public
 - *SO Detectado:* Linux Kernel 2.6.24-16-generic
 - *Host y Puertos Afectados:* 192.168.122.187 (tcp/80/www)
 
-La vulnerabilidad surge de un fallo en la API de abstracción de base de datos de Drupal, donde solicitudes manipuladas, como la enviada en el plugin_output (por ejemplo, name[0;SELECT+@@version;\#]=0), permiten inyectar y ejecutar código SQL arbitrario. Esto se evidencia en los errores de conversión de tipos y advertencias mostradas, como 'Array to string conversion', que confirman la explotación exitosa y podrían llevar a la ejecución de comandos PHP o acceso no autorizado a la base de datos.
+La vulnerabilidad surge de un fallo en la API de abstracción de base de datos de Drupal, donde solicitudes manipuladas, como la enviada en el plugin_output (por ejemplo, name[0;SELECT+\@version;\#]=0), permiten inyectar y ejecutar código SQL arbitrario. Esto se evidencia en los errores de conversión de tipos y advertencias mostradas, como 'Array to string conversion', que confirman la explotación exitosa y podrían llevar a la ejecución de comandos PHP o acceso no autorizado a la base de datos.
 
 *Puntuación de Riesgo:*
 - *Factor de Riesgo:* High
@@ -1044,7 +902,7 @@ La vulnerabilidad surge de un fallo en la API de abstracción de base de datos d
 - *SO Detectado:* Linux Kernel 2.6.24-16-generic
 - *Host y Puertos Afectados:* 192.168.122.187 (tcp/443/www)
 
-La vulnerabilidad se debe a un fallo en la API de abstracción de base de datos de Drupal, donde solicitudes manipuladas, como la enviada por Nessus en el POST a /drupal/, inyectan código SQL malicioso. Esto se evidencia en el plugin_output, que muestra errores como 'mb_strlen() expects parameter 1 to be string, array given', indicando que el parámetro 'name' es tratado como un array en lugar de una cadena, permitiendo la ejecución de consultas SQL arbitrarias como 'SELECT @@version', lo que puede resultar en acceso no autorizado a la base de datos y potencial ejecución de código PHP remoto.
+La vulnerabilidad se debe a un fallo en la API de abstracción de base de datos de Drupal, donde solicitudes manipuladas, como la enviada por Nessus en el POST a /drupal/, inyectan código SQL malicioso. Esto se evidencia en el plugin_output, que muestra errores como 'mb_strlen() expects parameter 1 to be string, array given', indicando que el parámetro 'name' es tratado como un array en lugar de una cadena, permitiendo la ejecución de consultas SQL arbitrarias como 'SELECT \@version', lo que puede resultar en acceso no autorizado a la base de datos y potencial ejecución de código PHP remoto.
 
 *Puntuación de Riesgo:*
 - *Factor de Riesgo:* High
@@ -2471,7 +2329,7 @@ La vulnerabilidad surge de una falla en la implementación de STARTTLS del servi
 - *SO Detectado:* Linux Kernel 2.6.24-16-generic
 - *Host y Puertos Afectados:* 192.168.122.187 (tcp/25/smtp)
 
-El servicio SMTP en el host utiliza un certificado X.509 autofirmado con detalles como Subject: C=XX/ST=There is no such thing outside US/L=Everywhere/O=OCOSA/OU=Office for Complication of Otherwise Simple Affairs/CN=ubuntu/E=root@ubuntu, que no está incluido en la lista de autoridades de certificación conocidas, lo que anula la protección SSL al permitir que un atacante suplante la identidad del servidor y realice ataques man-in-the-middle sin detección.
+El servicio SMTP en el host utiliza un certificado X.509 autofirmado con detalles como Subject: C=XX/ST=There is no such thing outside US/L=Everywhere/O=OCOSA/OU=Office for Complication of Otherwise Simple Affairs/CN=ubuntu/E=root\@ubuntu, que no está incluido en la lista de autoridades de certificación conocidas, lo que anula la protección SSL al permitir que un atacante suplante la identidad del servidor y realice ataques man-in-the-middle sin detección.
 
 *Puntuación de Riesgo:*
 - *Factor de Riesgo:* Medium
@@ -2505,7 +2363,7 @@ El servicio SMTP en el host utiliza un certificado X.509 autofirmado con detalle
 - *SO Detectado:* Linux Kernel 2.6.24-16-generic
 - *Host y Puertos Afectados:* 192.168.122.187 (tcp/443/www)
 
-El servicio en el puerto tcp/443 utiliza un certificado X.509 autofirmado con Subject: C=BE/ST=Flanders/L=Menen/O=MME/OU=IT/CN=bee-box.bwapp.local/E=bwapp@itsecgames.com, que no está firmado por una autoridad de certificación confiable. Esto anula la autenticidad del SSL, permitiendo que un atacante realice un ataque man-in-the-middle al presentar un certificado falso, comprometiendo la confidencialidad e integridad de las comunicaciones cifradas sin ser detectado por los clientes que no verifican adecuadamente los certificados.
+El servicio en el puerto tcp/443 utiliza un certificado X.509 autofirmado con Subject: C=BE/ST=Flanders/L=Menen/O=MME/OU=IT/CN=bee-box.bwapp.local/E=bwapp\@itsecgames.com, que no está firmado por una autoridad de certificación confiable. Esto anula la autenticidad del SSL, permitiendo que un atacante realice un ataque man-in-the-middle al presentar un certificado falso, comprometiendo la confidencialidad e integridad de las comunicaciones cifradas sin ser detectado por los clientes que no verifican adecuadamente los certificados.
 
 *Puntuación de Riesgo:*
 - *Factor de Riesgo:* Medium
@@ -2539,7 +2397,7 @@ El servicio en el puerto tcp/443 utiliza un certificado X.509 autofirmado con Su
 - *SO Detectado:* Linux Kernel 2.6.24-16-generic
 - *Host y Puertos Afectados:* 192.168.122.187 (tcp/8443/www)
 
-El servicio en el puerto tcp/8443 utiliza un certificado X.509 autofirmado con Subject C=BE/ST=Flanders/L=Menen/O=MME/OU=IT/CN=bee-box.bwapp.local/E=bwapp@itsecgames.com, que no está incluido en la lista de autoridades de certificación confiables; esto anula la protección SSL, permitiendo que un atacante realice un ataque man-in-the-middle para espiar o modificar el tráfico cifrado entre el cliente y el servidor, aunque no compromete directamente la disponibilidad del servicio.
+El servicio en el puerto tcp/8443 utiliza un certificado X.509 autofirmado con Subject C=BE/ST=Flanders/L=Menen/O=MME/OU=IT/CN=bee-box.bwapp.local/E=bwapp\@itsecgames.com, que no está incluido en la lista de autoridades de certificación confiables; esto anula la protección SSL, permitiendo que un atacante realice un ataque man-in-the-middle para espiar o modificar el tráfico cifrado entre el cliente y el servidor, aunque no compromete directamente la disponibilidad del servicio.
 
 *Puntuación de Riesgo:*
 - *Factor de Riesgo:* Medium
@@ -2573,7 +2431,7 @@ El servicio en el puerto tcp/8443 utiliza un certificado X.509 autofirmado con S
 - *SO Detectado:* Linux Kernel 2.6.24-16-generic
 - *Host y Puertos Afectados:* 192.168.122.187 (tcp/9443/www)
 
-El análisis técnico revela que el certificado X.509 en la cadena enviada por el host remoto es autofirmado, con detalles como Subject: C=BE/ST=Flanders/L=Menen/O=MME/OU=IT/CN=bee-box.bwapp.local/E=bwapp@itsecgames.com, y no está incluido en la lista de autoridades de certificación conocidas; esto anula la efectividad de SSL al permitir que un atacante realice un ataque man-in-the-middle, interceptando y posiblemente modificando las comunicaciones cifradas sin ser detectado, lo que compromete la confidencialidad e integridad de los datos en tránsito.
+El análisis técnico revela que el certificado X.509 en la cadena enviada por el host remoto es autofirmado, con detalles como Subject: C=BE/ST=Flanders/L=Menen/O=MME/OU=IT/CN=bee-box.bwapp.local/E=bwapp\@itsecgames.com, y no está incluido en la lista de autoridades de certificación conocidas; esto anula la efectividad de SSL al permitir que un atacante realice un ataque man-in-the-middle, interceptando y posiblemente modificando las comunicaciones cifradas sin ser detectado, lo que compromete la confidencialidad e integridad de los datos en tránsito.
 
 *Puntuación de Riesgo:*
 - *Factor de Riesgo:* Medium
@@ -4082,7 +3940,7 @@ El servicio SMTP en el puerto TCP/25 utiliza un certificado X.509 autofirmado em
 - *SO Detectado:* Linux Kernel 2.6 on Ubuntu 8.04 (hardy)
 - *Host y Puertos Afectados:* 192.168.122.29 (tcp/5432/postgresql)
 
-El servicio PostgreSQL utiliza un certificado X.509 autofirmado, como se indica en el plugin_output, con detalles del sujeto que incluyen C=XX/ST=There is no such thing outside US/L=Everywhere/O=OCOSA/OU=Office for Complication of Otherwise Simple Affairs/CN=ubuntu804-base.localdomain/E=root@ubuntu804-base.localdomain. Esto significa que la cadena de certificados no está respaldada por una autoridad de confianza, lo que anula la autenticación SSL/TLS y permite a un atacante realizar ataques man-in-the-middle para espiar o modificar el tráfico de datos entre el cliente y el servidor, comprometiendo la seguridad de las comunicaciones.
+El servicio PostgreSQL utiliza un certificado X.509 autofirmado, como se indica en el plugin_output, con detalles del sujeto que incluyen C=XX/ST=There is no such thing outside US/L=Everywhere/O=OCOSA/OU=Office for Complication of Otherwise Simple Affairs/CN=ubuntu804-base.localdomain/E=root\@ubuntu804-base.localdomain. Esto significa que la cadena de certificados no está respaldada por una autoridad de confianza, lo que anula la autenticación SSL/TLS y permite a un atacante realizar ataques man-in-the-middle para espiar o modificar el tráfico de datos entre el cliente y el servidor, comprometiendo la seguridad de las comunicaciones.
 
 *Puntuación de Riesgo:*
 - *Factor de Riesgo:* Medium
@@ -4702,7 +4560,7 @@ El servicio en el puerto tcp/9443 utiliza un certificado X.509 con una clave RSA
 - *SO Detectado:* Linux Kernel 2.6.24-16-generic
 - *Host y Puertos Afectados:* 192.168.122.187 (tcp/22/ssh)
 
-El servidor SSH en el host está configurado para soportar algoritmos de Cipher Block Chaining (CBC) tanto para cliente-a-servidor como servidor-a-cliente, incluyendo 3des-cbc, aes128-cbc, aes192-cbc, aes256-cbc, blowfish-cbc, cast128-cbc y rijndael-cbc@lysator.liu.se. Estos cifrados son vulnerables a ataques como el padding oracle, que pueden permitir a un atacante recuperar texto plano del texto cifrado si se intercepta la comunicación, aunque esto no implica una vulnerabilidad en la versión del software sino en la configuración.
+El servidor SSH en el host está configurado para soportar algoritmos de Cipher Block Chaining (CBC) tanto para cliente-a-servidor como servidor-a-cliente, incluyendo 3des-cbc, aes128-cbc, aes192-cbc, aes256-cbc, blowfish-cbc, cast128-cbc y rijndael-cbc\@lysator.liu.se. Estos cifrados son vulnerables a ataques como el padding oracle, que pueden permitir a un atacante recuperar texto plano del texto cifrado si se intercepta la comunicación, aunque esto no implica una vulnerabilidad en la versión del software sino en la configuración.
 
 *Puntuación de Riesgo:*
 - *Factor de Riesgo:* Low
@@ -5053,7 +4911,7 @@ El servicio SMTP en el puerto 25 soporta múltiples suites de cifrado SSL anóni
 - *SO Detectado:* Linux Kernel 2.6 on Ubuntu 8.04 (hardy)
 - *Host y Puertos Afectados:* 192.168.122.29 (tcp/22/ssh)
 
-El servidor SSH soporta algoritmos de cifrado en modo Cipher Block Chaining (CBC) tanto para cliente-a-servidor como servidor-a-cliente, incluyendo 3des-cbc, aes128-cbc, aes192-cbc, aes256-cbc, blowfish-cbc, cast128-cbc y rijndael-cbc@lysator.liu.se. Esto puede permitir a un atacante realizar ataques de padding oracle o similares para recuperar texto plano del cifrado, aunque la explotación es compleja y depende de factores como la versión del software y la presencia de un ataque activo.
+El servidor SSH soporta algoritmos de cifrado en modo Cipher Block Chaining (CBC) tanto para cliente-a-servidor como servidor-a-cliente, incluyendo 3des-cbc, aes128-cbc, aes192-cbc, aes256-cbc, blowfish-cbc, cast128-cbc y rijndael-cbc\@lysator.liu.se. Esto puede permitir a un atacante realizar ataques de padding oracle o similares para recuperar texto plano del cifrado, aunque la explotación es compleja y depende de factores como la versión del software y la presencia de un ataque activo.
 
 *Puntuación de Riesgo:*
 - *Factor de Riesgo:* Low
@@ -5174,131 +5032,3 @@ La vulnerabilidad se manifiesta en conexiones SSL/TLS, específicamente con las 
 4. Prevención: Implementar políticas de seguridad que exijan el uso de TLS 1.2 o superior y cipher suites fuertes, además de realizar auditorías periódicas de configuración criptográfica.
 
 *Conclusión:* Aunque el riesgo es bajo, la vulnerabilidad Logjam en el servicio SMTP debe abordarse para proteger la integridad de las comunicaciones y alinearse con los estándares de seguridad modernos.
-
-// ==================== ANÁLISIS DE RIESGO ====================
-= Análisis de Riesgo
-
-== Matriz de Riesgo
-
-#table(
-  columns: (1fr, auto, auto, auto, auto),
-  stroke: 0.5pt + gray,
-  fill: (x, y) => {
-    if y == 0 { rgb("#1f4788").lighten(90%) }
-    else if x > 0 and y > 0 {
-      let risk_colors = (
-        rgb("#ff4757").lighten(80%), // Crítico
-        rgb("#ff6b35").lighten(80%), // Alto  
-        rgb("#f39c12").lighten(80%), // Medio
-        rgb("#26de81").lighten(80%)  // Bajo
-      )
-      risk_colors.at(calc.min(x - 1, 3))
-    }
-  },
-  
-  table.header(
-    [*Categoría*], [*Crítico*], [*Alto*], [*Medio*], [*Bajo*]
-  ),
-  [Sistema Operativo], [X], [X], [X], [X],
-  [Servicios de Red], [X], [X], [X], [X],
-  [Configuración], [X], [X], [X], [X],
-  [Aplicaciones], [X], [X], [X], [X]
-)
-
-== Impacto Potencial
-
-*Riesgo Financiero:* Estimado entre \$XXX,XXX y \$X,XXX,XXX en caso de explotación exitosa.
-
-*Riesgo Operacional:* Posible interrupción de servicios críticos durante 24-72 horas.
-
-*Riesgo Reputacional:* Potencial pérdida de confianza de clientes y socios comerciales.
-
-*Riesgo Regulatorio:* Posibles sanciones por incumplimiento de normativas de protección de datos.
-
-// ==================== RECOMENDACIONES ====================
-= Plan de Remediación
-
-== Acciones Inmediatas (0-7 días)
-
-#alert_box(
-  title: "Crítico - Acción Inmediata",
-  content: [
-    1. *Aplicar parches críticos* en sistemas identificados como VULN-001, VULN-002
-    2. *Deshabilitar servicios innecesarios* en máquinas virtuales críticas
-    3. *Implementar reglas de firewall* restrictivas temporales
-    4. *Activar logging adicional* en sistemas críticos
-  ]
-)
-
-== Acciones a Corto Plazo (1-4 semanas)
-
-1. *Actualización completa* de sistemas operativos en todas las VM
-2. *Configuración de hardening* según mejores prácticas (CIS Benchmarks)
-3. *Implementación de autenticación* de doble factor donde sea posible
-4. *Establecimiento de políticas* de gestión de parches
-
-== Acciones a Mediano Plazo (1-3 meses)
-
-1. *Implementación de SIEM* para monitoreo continuo
-2. *Desarrollo de procedimientos* de respuesta a incidentes
-3. *Capacitación del equipo* técnico en seguridad
-4. *Auditorías regulares* de configuración
-
-== Acciones a Largo Plazo (3-12 meses)
-
-1. *Migración a arquitectura* de seguridad zero-trust
-2. *Implementación de automatización* para gestión de parches
-3. *Desarrollo de métricas* de seguridad (KPIs)
-4. *Establecimiento de programa* de bug bounty interno
-
-// ==================== CONCLUSIONES ====================
-= Conclusiones y Próximos Pasos
-
-== Resumen de Hallazgos
-
-La evaluación reveló [NÚMERO] vulnerabilidades distribuidas en múltiples niveles de criticidad. Si bien la mayoría de las vulnerabilidades identificadas pueden ser remediadas mediante la aplicación de parches y mejores prácticas de configuración, es crucial abordar las vulnerabilidades críticas dentro de las próximas 48-72 horas.
-
-== Recomendaciones Ejecutivas
-
-1. *Asignación inmediata de recursos* para la remediación de vulnerabilidades críticas
-2. *Establecimiento de un cronograma* claro para la implementación de mejoras
-3. *Designación de un equipo* responsable del seguimiento y cumplimiento
-4. *Programación de evaluaciones* regulares de seguridad (trimestrales)
-
-== Próximos Pasos
-
-1. *Aprobación del plan* de remediación por parte de la dirección
-2. *Asignación de presupuesto* y recursos necesarios
-3. *Comunicación del plan* a todos los stakeholders relevantes
-4. *Inicio de implementación* de acciones inmediatas
-
-// ==================== APÉNDICES ====================
-= Apéndices
-
-== Apéndice A: Lista Completa de Vulnerabilidades
-
-[Incluir tabla detallada con todas las vulnerabilidades encontradas]
-
-== Apéndice B: Evidencia Técnica
-
-[Incluir capturas de pantalla, logs relevantes, outputs de herramientas]
-
-== Apéndice C: Referencias y Estándares
-
-- NIST Cybersecurity Framework
-- CIS Controls v8
-- OWASP Top 10
-- CVE Database
-- CVSS v3.1 Specification
-
-== Apéndice D: Glosario de Términos
-
-*CVE:* Common Vulnerabilities and Exposures
-
-*CVSS:* Common Vulnerability Scoring System
-
-*SIEM:* Security Information and Event Management
-
-*VM:* Virtual Machine
-
-[Agregar términos adicionales según sea necesario]
