@@ -5067,3 +5067,90 @@ La vulnerabilidad se manifiesta en conexiones SSL/TLS, específicamente con las 
 4. Prevención: Implementar políticas de seguridad que exijan el uso de TLS 1.2 o superior y cipher suites fuertes, además de realizar auditorías periódicas de configuración criptográfica.
 
 *Conclusión:* Aunque el riesgo es bajo, la vulnerabilidad Logjam en el servicio SMTP debe abordarse para proteger la integridad de las comunicaciones y alinearse con los estándares de seguridad modernos.
+
+= Plan de Remediación
+
+== Acciones Inmediatas (0-7 días)
+
+#alert_box(
+  title: "Crítico - Acción Inmediata",
+  content: [
+    1. *Aplicar parches críticos* en sistemas identificados como VULN-001, VULN-002
+    2. *Deshabilitar servicios innecesarios* en máquinas virtuales críticas
+    3. *Implementar reglas de firewall* restrictivas temporales
+    4. *Activar logging adicional* en sistemas críticos
+  ]
+)
+
+== Acciones a Corto Plazo (1-4 semanas)
+
+1. *Actualización completa* de sistemas operativos en todas las VM
+2. *Configuración de hardening* según mejores prácticas (CIS Benchmarks)
+3. *Implementación de autenticación* de doble factor donde sea posible
+4. *Establecimiento de políticas* de gestión de parches
+
+== Acciones a Mediano Plazo (1-3 meses)
+
+1. *Implementación de SIEM* para monitoreo continuo
+2. *Desarrollo de procedimientos* de respuesta a incidentes
+3. *Capacitación del equipo* técnico en seguridad
+4. *Auditorías regulares* de configuración
+
+== Acciones a Largo Plazo (3-12 meses)
+
+1. *Migración a arquitectura* de seguridad zero-trust
+2. *Implementación de automatización* para gestión de parches
+3. *Desarrollo de métricas* de seguridad (KPIs)
+4. *Establecimiento de programa* de bug bounty interno
+
+// ==================== CONCLUSIONES ====================
+= Conclusiones y Próximos Pasos
+
+== Resumen de Hallazgos
+
+La evaluación reveló [NÚMERO] vulnerabilidades distribuidas en múltiples niveles de criticidad. Si bien la mayoría de las vulnerabilidades identificadas pueden ser remediadas mediante la aplicación de parches y mejores prácticas de configuración, es crucial abordar las vulnerabilidades críticas dentro de las próximas 48-72 horas.
+
+== Recomendaciones Ejecutivas
+
+1. *Asignación inmediata de recursos* para la remediación de vulnerabilidades críticas
+2. *Establecimiento de un cronograma* claro para la implementación de mejoras
+3. *Designación de un equipo* responsable del seguimiento y cumplimiento
+4. *Programación de evaluaciones* regulares de seguridad (trimestrales)
+
+== Próximos Pasos
+
+1. *Aprobación del plan* de remediación por parte de la dirección
+2. *Asignación de presupuesto* y recursos necesarios
+3. *Comunicación del plan* a todos los stakeholders relevantes
+4. *Inicio de implementación* de acciones inmediatas
+
+// ==================== APÉNDICES ====================
+= Apéndices
+
+== Apéndice A: Lista Completa de Vulnerabilidades
+
+[Incluir tabla detallada con todas las vulnerabilidades encontradas]
+
+== Apéndice B: Evidencia Técnica
+
+[Incluir capturas de pantalla, logs relevantes, outputs de herramientas]
+
+== Apéndice C: Referencias y Estándares
+
+- NIST Cybersecurity Framework
+- CIS Controls v8
+- OWASP Top 10
+- CVE Database
+- CVSS v3.1 Specification
+
+== Apéndice D: Glosario de Términos
+
+*CVE:* Common Vulnerabilities and Exposures
+
+*CVSS:* Common Vulnerability Scoring System
+
+*SIEM:* Security Information and Event Management
+
+*VM:* Virtual Machine
+
+[Agregar términos adicionales según sea necesario]
