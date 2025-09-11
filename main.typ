@@ -95,8 +95,43 @@ Se identificaron 136 vulnerabilidades en total, con 15 críticas, 8 altas, 91 me
 3. Realizar auditorías de seguridad regulares y capacitar al personal en concienciación sobre ciberseguridad.
 4. Establecer un marco de respuesta a incidentes para mitigar rápidamente cualquier brecha detectada.
 
-// ==================== RESUMEN DE HALLAZGOS POR HOST ====================
-= Resumen de Hallazgos por Host
+= Metodología de Evaluación
+
+== Alcance del Análisis
+
+La evaluación se realizó sobre la siguiente infraestructura:
+
+- *Número de máquinas virtuales analizadas:* 2
+- *Sistemas operativos evaluados:* Linux (Ubuntu)
+- *Hipervisores incluidos:* VMware
+
+== Herramientas Utilizadas
+
+#table(
+  columns: (1fr, 2fr, 1fr),
+  stroke: 0.5pt + gray,
+  fill: (x, y) => if calc.odd(y) { rgb("#f8f9fa") },
+  
+  [*Herramienta*], [*Propósito*], [*Versión*],
+  [Nessus Essentials], [Escaneo de vulnerabilidades], [10.9.3],
+  [Nmap], [Descubrimiento de servicios], [7.97],
+  [Metasploit], [Validación de vulnerabilidades], [X.X.X],
+)
+
+== Criterios de Clasificación
+
+Las vulnerabilidades se clasificaron utilizando el estándar CVSS v3.0:
+
+- *Crítica (9.0-10.0):* Explotación inmediata posible, impacto severo
+- *Alta (7.0-8.9):* Explotación probable, impacto significativo
+- *Media (4.0-6.9):* Explotación posible con condiciones específicas
+- *Baja (0.1-3.9):* Impacto limitado o explotación compleja
+
+// ==================== HALLAZGOS DETALLADOS ====================
+= Hallazgos Detallados de Nmap
+
+
+= Hallazgos Detallados de Nessus Essentials
 
 == Vulnerabilidades Críticas
 
