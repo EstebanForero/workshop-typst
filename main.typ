@@ -115,7 +115,7 @@ La evaluación se realizó sobre la siguiente infraestructura:
   [*Herramienta*], [*Propósito*], [*Versión*],
   [Nessus Essentials], [Escaneo de vulnerabilidades], [10.9.3],
   [Nmap], [Descubrimiento de servicios], [7.97],
-  [Metasploit], [Validación de vulnerabilidades], [X.X.X],
+  [Wireshark], [Analizador de trádico en la red], [4.4.9],
 )
 
 == Criterios de Clasificación
@@ -5068,6 +5068,106 @@ La vulnerabilidad se manifiesta en conexiones SSL/TLS, específicamente con las 
 
 *Conclusión:* Aunque el riesgo es bajo, la vulnerabilidad Logjam en el servicio SMTP debe abordarse para proteger la integridad de las comunicaciones y alinearse con los estándares de seguridad modernos.
 
+= Hallazgos Detallados de Wireshark
+
+== Proceso de captura
+Para capturar tráfico de red y analizarlo con Wireshark, inicialmente, se hizo ping entre las máquinas virtuales de Metasploitable y Bee-box, y despúes se abrieron algunos puertos utilizando Nmap. Los comandos utilizados de Nmap fueron:
+ 1. sudo nmap -sS -p- -Pn < IP de la red donde estan las máquinas >
+ 2. sudo nmap -sS -sV < IP Bee-box> < IP Metasploitable>
+
+ == Vulnerabilidades encontradas
+
+De este proceso resultaron 186 filas capturadas con diferentes tipos de tráfico: 162 DNS, 16 mDNS, 8 BROWSER. Sin embargo, en su mayoría, el tráfico detectado fue solo informativo. Las únicas filas que mostraron algun tipo de advertencia fueron las de tráfico tipo BROWSER que se ven a continuación. (Metasploitable: 192.168.5.220 & Bee-box: 192.168.5.87)
+
+#table(
+  columns: 6,
+  [*No.*],
+  [*Time*],
+  [*Source*],
+  [*Destination*],
+  [*Protocol*],
+  [*Info*],
+
+  [742027],
+  [122.937971],
+  [192.168.5.220],
+  [192.168.5.255],
+  [BROWSER],
+  [Local Master Announcement METASPLOITABLE, Workstation, Server, Print Queue Server, Xenix Server, NT Workstation, NT Server, Master Browser],
+
+  [742028],
+  [122.937986],
+  [192.168.5.220],
+  [192.168.5.255],
+  [BROWSER],
+  [Local Master Announcement METASPLOITABLE, Workstation, Server, Print Queue Server, Xenix Server, NT Workstation, NT Server, Master Browser],
+
+  [742029],
+  [122.938217],
+  [192.168.5.220],
+  [192.168.5.255],
+  [BROWSER],
+  [Domain/Workgroup Announcement WORKGROUP, NT Workstation, Domain Enum],
+
+  [742030],
+  [122.938222],
+  [192.168.5.220],
+  [192.168.5.255],
+  [BROWSER],
+  [Domain/Workgroup Announcement WORKGROUP, NT Workstation, Domain Enum],
+
+  [742031],
+  [122.938389],
+  [192.168.5.87],
+  [192.168.5.255],
+  [BROWSER],
+  [Local Master Announcement BEE-BOX, Workstation, Server, Print Queue Server, Xenix Server, NT Workstation, NT Server, Master Browser, DFS server],
+
+  [742032],
+  [122.938396],
+  [192.168.5.87],
+  [192.168.5.255],
+  [BROWSER],
+  [Local Master Announcement BEE-BOX, Workstation, Server, Print Queue Server, Xenix Server, NT Workstation, NT Server, Master Browser, DFS server],
+
+  [742033],
+  [122.938548],
+  [192.168.5.87],
+  [192.168.5.255],
+  [BROWSER],
+  [Domain/Workgroup Announcement ITSECGAMES, NT Workstation, Domain Enum],
+
+  [742034],
+  [122.938553],
+  [192.168.5.87],
+  [192.168.5.255],
+  [BROWSER],
+  [Domain/Workgroup Announcement ITSECGAMES, NT Workstation, Domain Enum],
+)
+
+La vulnerabilidad causada por este tipo de tráfico es de severidad #vulnerability_label(VulnerabilityLevel.medium), por lo que hay riesgos presentes pero aun así, se recomienda priorizar otras más críticas. Sin embargo, no se clasifican como riesgos únicamente informativos, ya que se esta exponiendo información de las máquinas. 
+
+Las vulnerabilidades encontradas con Wireshark se clasificaron como #vulnerability_label(VulnerabilityLevel.medium) debido a que en la calculadora "Common Vulnerability Scoring System Version 3.0 Calculator", se llegó a un puntaje de 5.3 por los siguientes factores:
+- *Attack Vector: Network*: el tráfico tipo BROWSER se envía por broadcast, por lo que el atacante unicamente necesita tener acceso a la red LAN para verlos.
+- *Attack Complexity: Low*: solo se debe escuchar la red sin ninguna condicion especial para obtener la información.
+- *Privileges Required: None*: el atacante no necesita autenticarse ni tener cuentas con privilegio, ya que la información esta en toda la red LAN.
+- *User Interaction: None*: el hecho de que la información este pública en la red LAN no depende de la interacción con un usuario.
+- *Scope: Unchanged*: el atacante aprende información útil para el reconocimiento, pero no cambia su capacidad de controlar recursos en otro contexto.
+- *Confidentiality: Low*: se expone información que puede ayudar para el reconocimiento pero no tiene datos sensibles o privados por sí sola.
+- *Integrity (I): None (N)*: no afecta la integridad de los sevicios, ya que no se esta permitiendo modificar información crítica directamente.
+- *Availability (A): None (N)*: la exposición de esta información no compromete la disponibilidad de los servicios directamente.
+
+En la tabla de capturas anterior se pueden observar algunos anuncios de tipo "Local Master Announcement / Domain/Workgroup Announcement" que muestran cadenas de texto con el nombre de cada una de las máquinas. Por ejemplo, en la captura número 742027, se puede observar el nombre "METASPLOITABLE" y en la número 742031 se observa el nombre "BEE-BOX". 
+
+Este tipo de anuncios revelan servicion NetBIOS o SMB que pueden mostrar el nombre y servicio de los hosts. Esta información, aunque no muestra que haya intentos directos de explotación, representa una vulnerabilidad de severidad media porque al estar expuestos los nombres y servicios de cada máquina virtual, se puede facilitar la fácil de reconocimiento. Esto se debe a que, por ejemplo, hosts como Metasploitable son indicativos de máquinas vulnerables.
+
+== Recomendaciones de mitigación
+
+- Deshabilitar NetBIOS en máquinas que no lo necesiten o segmentar la red con VLANs que no permitan que cualquier persona vea el tráfico.
+- La segmentación de red evita que máquinas de prueba como Metasploitable y Bee-box esten en la misma VLAN que máquinas prodictivas.
+- Actualización de servicios como SMB y eliminar los que no sean necesarios.
+- Monitorear constantemente consultas de red que puedan parecer inusuales.
+
 = Plan de Remediación
 
 == Acciones Inmediatas (0-7 días)
@@ -5124,33 +5224,4 @@ La evaluación reveló [NÚMERO] vulnerabilidades distribuidas en múltiples niv
 3. *Comunicación del plan* a todos los stakeholders relevantes
 4. *Inicio de implementación* de acciones inmediatas
 
-// ==================== APÉNDICES ====================
-= Apéndices
 
-== Apéndice A: Lista Completa de Vulnerabilidades
-
-[Incluir tabla detallada con todas las vulnerabilidades encontradas]
-
-== Apéndice B: Evidencia Técnica
-
-[Incluir capturas de pantalla, logs relevantes, outputs de herramientas]
-
-== Apéndice C: Referencias y Estándares
-
-- NIST Cybersecurity Framework
-- CIS Controls v8
-- OWASP Top 10
-- CVE Database
-- CVSS v3.1 Specification
-
-== Apéndice D: Glosario de Términos
-
-*CVE:* Common Vulnerabilities and Exposures
-
-*CVSS:* Common Vulnerability Scoring System
-
-*SIEM:* Security Information and Event Management
-
-*VM:* Virtual Machine
-
-[Agregar términos adicionales según sea necesario]
