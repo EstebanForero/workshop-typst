@@ -130,6 +130,330 @@ Las vulnerabilidades se clasificaron utilizando el estándar CVSS v3.0:
 // ==================== HALLAZGOS DETALLADOS ====================
 = Hallazgos Detallados de Nmap
 
+== Superficie de Ataque Identificada con Nmap: Metasploitable2 (192.168.122.29)
+
+#vuln_table(
+  ([*_SRV-M001_*], "vsftpd 2.3.4 con backdoor documentado (CVE-2011-2523)", "critical", "Pendiente"),
+  ([*_SRV-M002_*], "Telnet habilitado (protocolo inseguro, sin cifrado)", "high", "Pendiente"),
+  ([*_SRV-M003_*], "Bind shell activo en puerto 1524 (acceso root remoto)", "critical", "Pendiente"),
+  ([*_SRV-M004_*], "UnrealIRCd vulnerable a backdoor remoto (CVE-2010-2075)", "critical", "Pendiente"),
+  ([*_SRV-M005_*], "OpenSSH 4.7p1 detectado", "medium", "Confirmado por Nessus"),
+  ([*_SRV-M006_*], "Apache 2.2.8 detectado", "medium", "Confirmado por Nessus"),
+  ([*_SRV-M007_*], "Samba 3.x en 139/445", "high", "Confirmado por Nessus"),
+  ([*_SRV-M008_*], "MySQL 5.0.51a y PostgreSQL 8.3.x expuestos", "medium", "Confirmado por Nessus"),
+  ([*_SRV-M009_*], "X11 expuesto en 6000/tcp", "medium", "Confirmado por Nessus"),
+  ([*_SRV-M010_*], "VNC (protocolo 3.3) expuesto", "medium", "Requiere verificación de autenticación")
+)
+
+== Superficie de Ataque Identificada con Nmap: Bee-Box (192.168.122.187)
+
+#vuln_table(
+  ([*_SRV-B001_*], "distccd 1.x vulnerable a ejecución remota (CVE-2004-2687)", "critical", "Pendiente"),
+  ([*_SRV-B002_*], "Servidores web secundarios nginx 1.4.0 y lighttpd 1.4.19", "medium", "Pendiente"),
+  ([*_SRV-B003_*], "VNC protocolo 3.8 expuesto en 5901/tcp", "medium", "Pendiente"),
+  ([*_SRV-B004_*], "Servicio no estándar 'bWAPP Movie' en 666/tcp", "medium", "Requiere análisis manual"),
+  ([*_SRV-B005_*], "Apache 2.2.8 + PHP 5.2.4 detectados", "medium", "Confirmado por Nessus"),
+  ([*_SRV-B006_*], "MySQL 5.0.96 detectado", "medium", "Confirmado por Nessus"),
+  ([*_SRV-B007_*], "Samba 3.x en 139/445", "high", "Confirmado por Nessus"),
+  ([*_SRV-B008_*], "X11 expuesto en 6001/tcp", "medium", "Confirmado por Nessus")
+)
+
+= Análisis Detallado de Superficie de Ataque: Metasploitable2
+
+=== SRV-M001: vsftpd 2.3.4 con backdoor (CVE-2011-2523)
+
+*Resumen Ejecutivo:*  
+El servicio FTP expone una puerta trasera conocida que permite obtener acceso remoto como root sin credenciales válidas. Esto compromete por completo la seguridad del sistema y permite su control total por parte de un atacante.
+
+*Análisis Técnico:*  
+Nmap detectó *vsftpd 2.3.4*, vulnerable al *CVE-2011-2523*. Este exploit se activa al enviar un nombre de usuario que incluya la cadena `:)`, lo que genera un *bind shell* en el puerto 6200. La explotación es trivial, está automatizada en *Metasploit* y otorga privilegios root.  
+Al ser un servicio en un puerto común (21/tcp), es fácilmente localizable y explotable.
+
+*Severidad:* #vulnerability_label(VulnerabilityLevel.critical)
+
+*Acciones Recomendadas:*  
+1. Deshabilitar el servicio *vsftpd 2.3.4* inmediatamente.  
+2. Si FTP es requerido, reemplazarlo por una versión segura o migrar a *SFTP* (SSH File Transfer Protocol).  
+3. Aplicar segmentación de red y firewall para restringir accesos al puerto 21/tcp.  
+4. Verificar logs y conexiones históricas para descartar explotación previa.  
+
+---
+
+=== SRV-M002: Telnet habilitado
+
+*Resumen Ejecutivo:*  
+El servicio Telnet transmite credenciales y tráfico en texto claro, exponiendo información sensible a atacantes en la red.
+
+*Análisis Técnico:*  
+Se detectó *telnetd* en el puerto 23/tcp. Este protocolo carece de cifrado y autenticación robusta, siendo vulnerable a ataques de *sniffing*, *replay attacks* y *man-in-the-middle*.  
+El uso de Telnet en entornos modernos está desaconsejado y representa un riesgo elevado en redes compartidas o inseguras.
+
+*Severidad:* #vulnerability_label(VulnerabilityLevel.high)
+
+*Acciones Recomendadas:*  
+1. Deshabilitar el servicio Telnet en el host.  
+2. Migrar a *SSH* (ya presente en la máquina, puerto 22).  
+3. Implementar reglas de firewall para bloquear acceso al puerto 23/tcp.  
+4. Revisar auditorías y tráfico de red para identificar posibles accesos no autorizados.  
+
+---
+
+=== SRV-M003: Bind shell en 1524/tcp
+
+*Resumen Ejecutivo:*  
+Un servicio de *bind shell* otorga acceso remoto completo como root, sin necesidad de autenticación, constituyendo una puerta trasera intencional.
+
+*Análisis Técnico:*  
+Nmap reportó un *bind shell* activo en 1524/tcp. Estos servicios suelen instalarse como mecanismo de control persistente y permiten a cualquier atacante ejecutar comandos en el sistema con privilegios máximos.  
+Es un vector de compromiso crítico, ya que omite cualquier control de seguridad.
+
+*Severidad:* #vulnerability_label(VulnerabilityLevel.critical)
+
+*Acciones Recomendadas:*  
+1. Aislar inmediatamente la máquina de la red.  
+2. Deshabilitar y eliminar cualquier proceso asociado al puerto 1524.  
+3. Reinstalar el sistema desde una fuente confiable (máquina comprometida).  
+4. Implementar monitoreo IDS/IPS para detectar patrones de *bind shells*.  
+
+---
+
+=== SRV-M004: UnrealIRCd vulnerable (CVE-2010-2075)
+
+*Resumen Ejecutivo:*  
+El servicio IRC expone una versión contaminada de UnrealIRCd, que incluye un backdoor documentado y permite ejecución remota de comandos arbitrarios.
+
+*Análisis Técnico:*  
+Nmap identificó *UnrealIRCd*, vulnerable al *CVE-2010-2075*. Esta versión fue distribuida de forma comprometida desde los repositorios oficiales, conteniendo un backdoor que responde a comandos maliciosos enviados en el protocolo IRC.  
+La explotación es trivial y otorga acceso root remoto.
+
+*Severidad:* #vulnerability_label(VulnerabilityLevel.critical)
+
+*Acciones Recomendadas:*  
+1. Eliminar o reemplazar UnrealIRCd inmediatamente por una versión legítima y actualizada.  
+2. Bloquear accesos externos al puerto IRC (6667/tcp y 6697/tcp).  
+3. Implementar reglas de detección en el IDS para tráfico anómalo de IRC.  
+4. Auditar la integridad de los binarios en el sistema para descartar otras contaminaciones.  
+
+---
+
+=== SRV-M010: VNC (protocolo 3.3) expuesto
+
+*Resumen Ejecutivo:*  
+El servicio de escritorio remoto VNC se ejecuta con un protocolo obsoleto que carece de cifrado, exponiendo el acceso remoto a ataques de fuerza bruta y captura de tráfico.
+
+*Análisis Técnico:*  
+Se detectó *VNC protocolo 3.3* en el puerto 5900/tcp. Esta versión no implementa cifrado y usa autenticación débil, vulnerable a ataques automatizados.  
+Es posible que el servicio esté configurado con credenciales triviales o incluso sin contraseña.
+
+*Severidad:* #vulnerability_label(VulnerabilityLevel.medium)
+
+*Acciones Recomendadas:*  
+1. Deshabilitar el servicio VNC si no es estrictamente necesario.  
+2. Configurar una versión de VNC moderna con cifrado (e.g., *VeNCrypt* o uso sobre *SSH tunnel*).  
+3. Implementar restricciones de acceso por firewall al puerto 5900/tcp.  
+4. Aplicar monitoreo para detectar intentos de fuerza bruta en VNC.  
+
+= Análisis Detallado de Superficie de Ataque: Bee-Box
+
+=== SRV-B001: distccd 1.x vulnerable a ejecución remota (CVE-2004-2687)
+
+*Resumen Ejecutivo:*  
+El servicio de compilación distribuida distccd permite a un atacante ejecutar código arbitrario en el servidor sin autenticación, comprometiendo la integridad del sistema.
+
+*Análisis Técnico:*  
+Se detectó *distccd v1* en el puerto 3632/tcp. Esta versión es vulnerable al *CVE-2004-2687*, que permite enviar tareas de compilación manipuladas con código arbitrario.  
+Existen exploits públicos que automatizan el ataque, otorgando acceso remoto al sistema con los privilegios del servicio (a menudo root en entornos inseguros).
+
+*Severidad:* #vulnerability_label(VulnerabilityLevel.critical)
+
+*Acciones Recomendadas:*  
+1. Deshabilitar inmediatamente el servicio *distccd* si no es requerido.  
+2. Restringir el acceso al puerto 3632 mediante firewall.  
+3. Si se requiere compilación distribuida, actualizar a una versión mantenida y limitar el acceso únicamente a hosts de confianza.  
+4. Implementar monitoreo IDS/IPS para detectar intentos de explotación de distccd.  
+
+---
+
+=== SRV-B002: Servidores web secundarios nginx 1.4.0 y lighttpd 1.4.19
+
+*Resumen Ejecutivo:*  
+La máquina ejecuta múltiples servidores web obsoletos (nginx y lighttpd), lo que amplía innecesariamente la superficie de ataque y expone vulnerabilidades conocidas.
+
+*Análisis Técnico:*  
+Nmap detectó *nginx 1.4.0* en el puerto 8080/tcp y *lighttpd 1.4.19* en el puerto 9080/tcp.  
+Estas versiones antiguas presentan vulnerabilidades documentadas, incluyendo:  
+- *nginx 1.4.0* → vulnerabilidades de *denial of service* y *information disclosure*.  
+- *lighttpd 1.4.19* → problemas de *buffer overflow* y configuraciones inseguras de CGI.  
+Al no haber sido reportados en Nessus, requieren un análisis adicional de exposición.
+
+*Severidad:* #vulnerability_label(VulnerabilityLevel.medium)
+
+*Acciones Recomendadas:*  
+1. Evaluar si es necesario mantener múltiples servidores web en el mismo host.  
+2. Deshabilitar los servicios secundarios innecesarios.  
+3. Actualizar a versiones recientes y soportadas de nginx y lighttpd.  
+4. Revisar configuraciones de seguridad (cabeceras HTTP, permisos de directorio, autenticación).  
+
+---
+
+=== SRV-B003: VNC protocolo 3.8 expuesto en 5901/tcp
+
+*Resumen Ejecutivo:*  
+El servicio de escritorio remoto VNC se ejecuta en un puerto alternativo con un protocolo obsoleto, exponiendo accesos remotos a ataques de fuerza bruta y tráfico en texto claro.
+
+*Análisis Técnico:*  
+Se identificó *VNC protocolo 3.8* en el puerto 5901/tcp. Aunque más reciente que el 3.3 detectado en Metasploitable, sigue careciendo de cifrado nativo y presenta autenticación débil.  
+Un atacante puede interceptar credenciales mediante sniffing de red o realizar ataques de fuerza bruta de manera sencilla.
+
+*Severidad:* #vulnerability_label(VulnerabilityLevel.medium)
+
+*Acciones Recomendadas:*  
+1. Deshabilitar VNC si no es estrictamente necesario.  
+2. Si se requiere, encapsularlo en túneles SSH o VPN para proveer cifrado.  
+3. Usar versiones de VNC que soporten *VeNCrypt* u otros métodos modernos de cifrado.  
+4. Restringir el acceso al puerto 5901/tcp mediante firewall.  
+
+---
+
+=== SRV-B004: Servicio no estándar "bWAPP Movie" en 666/tcp
+
+*Resumen Ejecutivo:*  
+Se detectó un servicio desconocido identificado como *bWAPP Movie Service* en un puerto no estándar (666/tcp). La falta de documentación y análisis lo convierte en un potencial riesgo de seguridad.
+
+*Análisis Técnico:*  
+El banner revelado por Nmap muestra `*** bWAPP Movie Service ***`.  
+No existe documentación oficial sobre este servicio, lo que sugiere que puede tratarse de un componente de prueba o incluso un backdoor no intencional.  
+El uso de un puerto bajo y no estándar también puede indicar una configuración experimental. Al no estar reportado por Nessus, se requiere revisión manual para descartar comportamientos maliciosos.
+
+*Severidad:* #vulnerability_label(VulnerabilityLevel.medium)
+
+*Acciones Recomendadas:*  
+1. Revisar el servicio manualmente para identificar su origen y propósito.  
+2. Deshabilitarlo si no es esencial para el entorno de pruebas.  
+3. Restringir el acceso al puerto 666/tcp hasta confirmar su seguridad.  
+4. Analizar logs y comportamiento en ejecución para descartar accesos no autorizados o conexiones sospechosas.  
+
+
+= Vulnerabilidades Detectadas por Ambos Escáneres (Nmap + Nessus)
+
+== Metasploitable2 (192.168.122.29)
+
+=== SRV-M005: OpenSSH 4.7p1 detectado
+*Resumen Ejecutivo:*  
+Nmap confirmó la presencia de *OpenSSH 4.7p1*. Esta versión ya había sido reportada por Nessus como obsoleta y vulnerable.  
+
+*Análisis Técnico:*  
+La versión 4.7p1 de OpenSSH es antigua y está asociada a múltiples CVEs de ejecución remota y bypass de autenticación.  
+Nmap corrobora el hallazgo de Nessus.  
+
+*Severidad:* #vulnerability_label(VulnerabilityLevel.medium)  
+*Referencia Nessus:* VULN-M005 (Debian OpenSSH/OpenSSL RNG Weakness, entre otros).  
+
+---
+
+=== SRV-M006: Apache 2.2.8 detectado
+*Resumen Ejecutivo:*  
+Nmap detectó *Apache 2.2.8*, versión antigua confirmada previamente en Nessus.  
+
+*Análisis Técnico:*  
+Apache 2.2.8 carece de soporte y tiene vulnerabilidades conocidas como *directory traversal*, *DoS* y problemas de *mod_status*.  
+Nmap valida el hallazgo original.  
+
+*Severidad:* #vulnerability_label(VulnerabilityLevel.medium)  
+*Referencia Nessus:* VULN-M001 (Apache Tomcat/Apache SEoL relacionados).  
+
+---
+
+=== SRV-M007: Samba 3.x en 139/445
+*Resumen Ejecutivo:*  
+Nmap detectó *Samba 3.x* en los puertos SMB, también reportado por Nessus.  
+
+*Análisis Técnico:*  
+Versiones de Samba 3.x están asociadas a vulnerabilidades críticas como *heap-based buffer overflow* y *Badlock*.  
+La explotación puede permitir RCE o escalada de privilegios.  
+
+*Severidad:* #vulnerability_label(VulnerabilityLevel.high)  
+*Referencia Nessus:* VULN-M043 (Samba Badlock Vulnerability).  
+
+---
+
+=== SRV-M008: MySQL 5.0.51a y PostgreSQL 8.3.x expuestos
+*Resumen Ejecutivo:*  
+Nmap confirmó la exposición de bases de datos antiguas MySQL y PostgreSQL. Nessus ya las había reportado como versiones sin soporte.  
+
+*Análisis Técnico:*  
+Estas versiones contienen múltiples vulnerabilidades de RCE, DoS y fuga de información.  
+Nmap solo valida la presencia de los servicios.  
+
+*Severidad:* #vulnerability_label(VulnerabilityLevel.medium)  
+*Referencia Nessus:* VULN-M008 (SQLi / SEoL).  
+
+---
+
+=== SRV-M009: X11 expuesto en 6000/tcp
+*Resumen Ejecutivo:*  
+El servicio gráfico remoto X11 fue detectado por Nmap en el puerto 6000. Nessus ya lo había marcado como inseguro.  
+
+*Análisis Técnico:*  
+X11 expuesto permite captura de pantallas, registro de teclas y ejecución remota si no está protegido.  
+Nmap valida este hallazgo.  
+
+*Severidad:* #vulnerability_label(VulnerabilityLevel.medium)  
+*Referencia Nessus:* VULN-M045 (X Server Detection).  
+
+---
+
+== Bee-Box (192.168.122.187)
+
+=== SRV-B005: Apache 2.2.8 + PHP 5.2.4
+*Resumen Ejecutivo:*  
+Nmap detectó *Apache 2.2.8 + PHP 5.2.4*. Nessus ya había reportado estas versiones como inseguras.  
+
+*Análisis Técnico:*  
+Ambas versiones están sin soporte y contienen vulnerabilidades múltiples (SQL injection, DoS, XSS).  
+Nmap confirma la exposición de estos servicios.  
+
+*Severidad:* #vulnerability_label(VulnerabilityLevel.medium)  
+*Referencia Nessus:* VULN-B015 (Apache mod_status), VULN-B017 (HTTP TRACE) y relacionados.  
+
+---
+
+=== SRV-B006: MySQL 5.0.96
+*Resumen Ejecutivo:*  
+Nmap detectó MySQL 5.0.96, versión confirmada previamente en Nessus.  
+
+*Análisis Técnico:*  
+MySQL 5.0.96 es vulnerable a múltiples fallos de ejecución remota, buffer overflows y fuga de datos.  
+Nmap simplemente valida lo ya reportado.  
+
+*Severidad:* #vulnerability_label(VulnerabilityLevel.medium)  
+*Referencia Nessus:* VULN-B006 (SQLi / SEoL).  
+
+---
+
+=== SRV-B007: Samba 3.x en 139/445
+*Resumen Ejecutivo:*  
+Nmap confirmó la presencia de *Samba 3.x*, también reportado en Nessus.  
+
+*Análisis Técnico:*  
+Samba 3.x incluye vulnerabilidades críticas como *heap-based buffer overflow* y *Badlock*.  
+Este hallazgo ya cuenta con detalle en el informe Nessus.  
+
+*Severidad:* #vulnerability_label(VulnerabilityLevel.high)  
+*Referencia Nessus:* VULN-B070 (Samba Badlock Vulnerability).  
+
+---
+
+=== SRV-B008: X11 expuesto en 6001/tcp
+*Resumen Ejecutivo:*  
+El servicio gráfico remoto X11 fue detectado en el puerto 6001/tcp, confirmado por Nessus.  
+
+*Análisis Técnico:*  
+X11 expuesto permite que atacantes remotos capten eventos gráficos y controlen sesiones.  
+Nmap corrobora el hallazgo.  
+
+*Severidad:* #vulnerability_label(VulnerabilityLevel.medium)  
+*Referencia Nessus:* VULN-B073 (X Server Detection).  
 
 = Hallazgos Detallados de Nessus Essentials
 
@@ -5223,5 +5547,3 @@ La evaluación reveló [NÚMERO] vulnerabilidades distribuidas en múltiples niv
 2. *Asignación de presupuesto* y recursos necesarios
 3. *Comunicación del plan* a todos los stakeholders relevantes
 4. *Inicio de implementación* de acciones inmediatas
-
-
