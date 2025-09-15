@@ -186,7 +186,7 @@ El servicio Telnet transmite credenciales y tráfico en texto claro, exponiendo 
 
 *Análisis Técnico:*  
 Se detectó *telnetd* en el puerto 23/tcp. Este protocolo carece de cifrado y autenticación robusta, siendo vulnerable a ataques de *sniffing*, *replay attacks* y *man-in-the-middle*.  
-El uso de Telnet en entornos modernos está desaconsejado y representa un riesgo elevado en redes compartidas o inseguras.
+El uso de Telnet en entornos modernos está deprecado y representa un riesgo elevado en redes compartidas o inseguras.
 
 *Severidad:* #vulnerability_label(VulnerabilityLevel.high)
 
@@ -5401,7 +5401,7 @@ Para capturar tráfico de red y analizarlo con Wireshark, inicialmente, se hizo
 
  == Vulnerabilidades encontradas
 
-De este proceso resultaron 186 filas capturadas con diferentes tipos de tráfico: 162 DNS, 16 mDNS, 8 BROWSER. Sin embargo, en su mayoría, el tráfico detectado fue solo informativo. Las únicas filas que mostraron algun tipo de advertencia fueron las de tráfico tipo BROWSER que se ven a continuación. (Metasploitable: 192.168.5.220 & Bee-box: 192.168.5.87)
+De este proceso resultaron 186 filas capturadas con diferentes tipos de tráfico: 162 DNS, 16 mDNS, 8 BROWSER. Sin embargo, en su mayoría, el tráfico detectado fue solo informativo. Las únicas filas que mostraron algun tipo de advertencia fueron las de tráfico tipo BROWSER que se ven a continuación. (Metasploitable: 192.168.122.29 & Bee-box: 192.168.122.187)
 
 #table(
   columns: 6,
@@ -5499,10 +5499,21 @@ Este tipo de anuncios revelan servicion NetBIOS o SMB que pueden mostrar el nomb
 #alert_box(
   title: "Crítico - Acción Inmediata",
   content: [
-    1. *Aplicar parches críticos* en sistemas identificados como VULN-001, VULN-002
-    2. *Deshabilitar servicios innecesarios* en máquinas virtuales críticas
-    3. *Implementar reglas de firewall* restrictivas temporales
-    4. *Activar logging adicional* en sistemas críticos
+    1. *Aislar y Reinstalar Sistemas Comprometidos:* Abordar inmediatamente las puertas traseras (backdoors) que otorgan control total a un atacante:
+
+        *Metasploitable2:* Deshabilitar vsftpd (`SRV-M001`), eliminar el bind shell (`SRV-M003`), y remover UnrealIRCd (`SRV-M004`). Dada la severidad, se recomienda la reinstalación del sistema.
+
+        *Bee-Box:* Deshabilitar el servicio `distccd` (`SRV-B001`).
+
+    2. *Corregir Vulnerabilidades de Autenticación Críticas:*
+
+        *Metasploitable2:* Cambiar la contraseña débil de VNC (`VULN-M010`) y regenerar las claves SSH débiles (`VULN-M005`).
+
+    3. *Deshabilitar Protocolos Inseguros Críticos:*
+
+        *Bee-Box:* Deshabilitar SSLv2 y SSLv3 en todos los servicios, especialmente en los puertos 25, 443, 8443 y 9443 (`VULN-B001` a `VULN-B004`).
+
+    4. *Implementar Reglas de Firewall:* Bloquear inmediatamente el acceso a servicios inseguros no esenciales como Telnet (`SRV-M002`) y rlogin/rsh (`VULN-M011`, `VULN-M012`).
   ]
 )
 
@@ -5532,7 +5543,7 @@ Este tipo de anuncios revelan servicion NetBIOS o SMB que pueden mostrar el nomb
 
 == Resumen de Hallazgos
 
-La evaluación reveló [NÚMERO] vulnerabilidades distribuidas en múltiples niveles de criticidad. Si bien la mayoría de las vulnerabilidades identificadas pueden ser remediadas mediante la aplicación de parches y mejores prácticas de configuración, es crucial abordar las vulnerabilidades críticas dentro de las próximas 48-72 horas.
+La evaluación reveló 136 vulnerabilidades distribuidas en múltiples niveles de criticidad. Si bien la mayoría de las vulnerabilidades identificadas pueden ser remediadas mediante la aplicación de parches y mejores prácticas de configuración, es crucial abordar las vulnerabilidades críticas dentro de las próximas 48-72 horas.
 
 == Recomendaciones Ejecutivas
 
